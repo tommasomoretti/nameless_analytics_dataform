@@ -1,5 +1,5 @@
 defaultProject: tom-moretti
 defaultLocation: EU
-defaultDataset: dataform
-defaultAssertionDataset: dataform_assertions
+defaultDataset: nameless_analytics
+defaultAssertionDataset: nameless_analytics_assertions
 dataformCoreVersion: 3.0.0
