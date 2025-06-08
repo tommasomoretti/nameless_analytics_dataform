@@ -4,7 +4,6 @@ config {
   type: "operations",
   dependencies: ['users_raw_latest']
 }
-
 CREATE OR REPLACE TABLE FUNCTION `tom-moretti.nameless_analytics.users`(start_date DATE, end_date DATE) AS (
   with user_data_raw as ( 
     select   
@@ -37,11 +36,11 @@ CREATE OR REPLACE TABLE FUNCTION `tom-moretti.nameless_analytics.users`(start_da
       if(event_data.event_name = 'purchase', event_data.event_timestamp, null) as purchase_timestamp,
       (select value.json from unnest(event_data.event_data) where name = 'ecommerce') as transaction_data,
       json_extract_array((select value.json from unnest(event_data.event_data) where name = 'ecommerce'), '$.items') as items_data
-      
-      from ${ref(constants.users_raw_latest)} (start_date, end_date, 'user_level') as user_data
-        left join ${ref(constants.events)} as event_data 
-          on user_data.client_id = event_data.client_id
-          and user_data.session_id = event_data.session_id
+          
+    from ${ref(constants.users_raw_latest)} (start_date, end_date, 'user_level') as user_data
+      left join ${ref(constants.events)} as event_data 
+        on user_data.client_id = event_data.client_id
+        and user_data.session_id = event_data.session_id
   ),
 
   user_data as (

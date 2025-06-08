@@ -8,13 +8,9 @@ config {
 CREATE OR REPLACE TABLE FUNCTION `tom-moretti.nameless_analytics.users_raw_latest`(start_date DATE, end_date DATE, user_session_scope_param STRING) AS (
   with user_raw as (
     select
-      document_name,
-      document_id,
-      FIRST_VALUE(timestamp) OVER (PARTITION BY document_name ORDER BY timestamp DESC) AS timestamp,
       FIRST_VALUE(event_id) OVER (PARTITION BY document_name ORDER BY timestamp DESC) AS event_id,
-      -- FIRST_VALUE(operation) OVER (PARTITION BY document_name ORDER BY timestamp DESC) AS operation,
+      FIRST_VALUE(timestamp) OVER (PARTITION BY document_name ORDER BY timestamp DESC) AS timestamp,
       FIRST_VALUE(data) OVER (PARTITION BY document_name ORDER BY timestamp DESC) AS data,
-      -- FIRST_VALUE(old_data) OVER (PARTITION BY document_name ORDER BY timestamp DESC) AS old_data,
       FIRST_VALUE(operation) OVER (PARTITION BY document_name ORDER BY timestamp DESC) = "DELETE" AS is_deleted
     from ${ref("users_raw_changelog")}
   )
@@ -36,6 +32,8 @@ CREATE OR REPLACE TABLE FUNCTION `tom-moretti.nameless_analytics.users_raw_lates
     JSON_VALUE(data, '$.user_device_type') as user_device_type,
     JSON_VALUE(data, '$.user_country') as user_country,
     JSON_VALUE(data, '$.user_language') as user_language,
+    # Add custom values here
+    # JSON_VALUE(data, '$.custom_user_param') as custom_user_param,
 
     # SESSION DATA
     date(JSON_VALUE(session_data, '$.session_date')) as session_date,
@@ -61,7 +59,8 @@ CREATE OR REPLACE TABLE FUNCTION `tom-moretti.nameless_analytics.users_raw_lates
     JSON_VALUE(session_data, '$.session_exit_page_location') as session_exit_page_location,
     JSON_VALUE(session_data, '$.session_exit_page_title') as session_exit_page_title,
     # Add custom values here
-    # JSON_VALUE(session_data, '$.session_quality') as session_quality,
+    # JSON_VALUE(session_data, '$.custom_session_param') as custom_session_param,
+    
   from user_raw,
     unnest(JSON_EXTRACT_ARRAY(PARSE_JSON(data), '$.sessions')) AS session_data
   where true 
